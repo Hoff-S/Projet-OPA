@@ -3,7 +3,7 @@ from pymongo import MongoClient
 import os
 
 username = "admin"
-password = "avr24_de"
+password = os.environ.get('MONGODB_PW')
 
 client = MongoClient('mongodb://%s:%s@127.0.0.1:27017' % (username, password))
 db = client['cryptobot']
