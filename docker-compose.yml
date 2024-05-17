@@ -1,9 +1,8 @@
-version: '3.8'
+version: '3'
 
 services:
   mariadb:
     image: mariadb
-    container_name: container_mariadb
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: secretpw
@@ -18,5 +17,3 @@ services:
 volumes:
   mariadb_data:
     driver: local
-
-# Penser à installer mysql-client dans le container

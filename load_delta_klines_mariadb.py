@@ -1,12 +1,13 @@
 import pandas as pd
 from binance.client import Client
 from sqlalchemy import create_engine, text
+import os
 
 # Check if data already exists in database before loading it
 
 # Define the connection URL
-DB_USERNAME = 'user'
-DB_PASSWORD = 'secretpw'
+DB_USERNAME = os.environ.get('USER')
+DB_PASSWORD = os.environ.get('MARIADB_PW')
 DB_HOST = 'localhost'
 DB_PORT = '3306'
 DB_NAME = 'ProjetOPA'
