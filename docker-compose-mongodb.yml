@@ -1,0 +1,38 @@
+version: "3.3"
+
+services:
+  database:
+    container_name: my_mongo
+    image: mongo:5.0
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_DATABASE=cryptobot
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PW}
+    networks: 
+      - mongo-compose-network
+    ports:
+      - '27017:27017'
+    volumes: 
+      - ./data/db:/data/db
+
+  mongoexpress:
+    container_name: mongo-express
+    image: mongo-express:0.54
+    depends_on:
+      - database
+    networks: 
+      - mongo-compose-network
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=my_mongo
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGODB_PW}
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGODB_PW}
+    ports:
+      - '8081:8081'
+    volumes: 
+      - ./data/db:/data/db      
+
+networks:
+  mongo-compose-network:
