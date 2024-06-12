@@ -1,0 +1,107 @@
+version: "3.9"
+
+services:
+  database:
+    container_name: my_mongo
+    image: mongo:5.0
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_DATABASE=cryptobot
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PW}
+    networks: 
+      - compose-network
+    ports:
+      - '27017:27017'
+
+  mongoexpress:
+    container_name: mongo-express
+    image: mongo-express:0.54
+    restart: always
+    depends_on:
+      - database
+    networks: 
+      - compose-network
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=my_mongo
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=${MONGODB_PW}
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=${MONGODB_PW}
+    ports:
+      - '8081:8081'
+
+  mariadb:
+    image: mariadb:latest
+    container_name: my_mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_PW}
+      MYSQL_DATABASE: ProjetOPA
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MARIADB_PW}
+    ports:
+      - "3306:3306"    
+    networks: 
+      - compose-network 
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+     - PMA_ARBITRARY=1
+    restart: always
+    ports:
+     - 8080:80
+    depends_on:
+      - mariadb
+    networks: 
+      - compose-network 
+
+  data_loader:
+    image: cryptobot_loader:latest
+    container_name: cryptobot_loader
+    depends_on:
+      - database
+      - mariadb
+    environment:
+      - MARIADB_PW=${MARIADB_PW}
+      - MARIADB_HOST=mariadb
+      - MONGODB_PW=${MONGODB_PW}
+      - MONGODB_HOST=database  
+    networks: 
+      - compose-network 
+
+  cryptobot_api:
+    image: cryptobot_api:latest
+    container_name: cryptobot_api
+    depends_on:
+      - database
+      - data_loader
+    environment:
+      - MARIADB_PW=${MARIADB_PW}
+      - MARIADB_HOST=mariadb
+      - MONGODB_PW=${MONGODB_PW}
+      - MONGODB_HOST=database 
+    ports:
+     - 8000:8000
+    networks: 
+      - compose-network  
+
+  model_training:
+    image: model_training:latest
+    container_name: model_training
+    depends_on:
+      - cryptobot_api
+    environment:
+      - API_URL=cryptobot_api
+      - MLFLOW_TRACKING_URI=http://192.168.1.66:5000
+      - MLFLOW_USER=crypto_bot
+      - MLFLOW_PW=${MLFLOW_PW}
+    networks: 
+      - compose-network
+
+networks:
+  compose-network:
+    name: my_network
