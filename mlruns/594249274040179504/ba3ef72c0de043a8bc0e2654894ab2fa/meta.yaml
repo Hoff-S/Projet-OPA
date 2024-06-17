@@ -1,0 +1,16 @@
+artifact_uri: file:///C:/Users/apsho/OneDrive/Documents/Formations/DataScientest/Projet/mlruns/594249274040179504/ba3ef72c0de043a8bc0e2654894ab2fa/artifacts
+deleted_time: 1717575900538
+end_time: 1717572296481
+entry_point_name: ''
+experiment_id: '594249274040179504'
+lifecycle_stage: deleted
+run_id: ba3ef72c0de043a8bc0e2654894ab2fa
+run_name: first_run
+run_uuid: ba3ef72c0de043a8bc0e2654894ab2fa
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717572296425
+status: 4
+tags: []
+user_id: apsho

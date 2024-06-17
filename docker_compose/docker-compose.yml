@@ -53,7 +53,7 @@ services:
      - PMA_ARBITRARY=1
     restart: always
     ports:
-     - 8080:80
+     - 8050:80
     depends_on:
       - mariadb
     networks: 
@@ -96,9 +96,9 @@ services:
       - cryptobot_api
     environment:
       - API_URL=cryptobot_api
-      - MLFLOW_TRACKING_URI=http://192.168.1.66:5000
-      - MLFLOW_USER=crypto_bot
-      - MLFLOW_PW=${MLFLOW_PW}
+      - MLFLOW_TRACKING_URI=http://86.77.27.174:8080
+      - MLFLOW_TRACKING_USERNAME=admin
+      - MLFLOW_TRACKING_PASSWORD=${MLFLOW_PW}
     networks: 
       - compose-network
 

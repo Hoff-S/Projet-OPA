@@ -1,0 +1,3 @@
+$env:MLFLOW_TRACKING_PASSWORD='DST1234!'
+$env:MONGODB_PW='avr24_de'
+$env:MARIADB_PW='secretpw'

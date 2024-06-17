@@ -1,0 +1,8 @@
+setup.txt
+test_auth.py
+venv
+load_delta_klines_mariadb.py
+load_histo_klines_mariadb.py
+mlruns
+Obsolete
+binance-api-postman-master

@@ -1,0 +1,16 @@
+artifact_uri: mlflow-artifacts:/0/aedee35a18c645ecbbee0a5e2d74bef5/artifacts
+deleted_time: 1717667182461
+end_time: 1717571881254
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: deleted
+run_id: aedee35a18c645ecbbee0a5e2d74bef5
+run_name: first_run
+run_uuid: aedee35a18c645ecbbee0a5e2d74bef5
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1717571868242
+status: 4
+tags: []
+user_id: apsho

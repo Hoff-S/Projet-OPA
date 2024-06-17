@@ -1,0 +1,19 @@
+exit
+db.market_data.findOne()
+show collections
+use ProjetOPA
+show collections
+use ProjetOPÄ
+show dbs
+& C:/Users/apsho/OneDrive/Documents/Formations/DataScientest/Projet/venv/Scripts/python.exe c:/Users/apsho/OneDrive/Documents/Formations/DataScientest/Projet/Obsolete/load_data.py
+db.market_data.findOne()
+show collections
+use ProjetOPA
+show dbs
+exit
+& C:/Users/apsho/OneDrive/Documents/Formations/DataScientest/Projet/venv/Scripts/python.exe c:/Users/apsho/OneDrive/Documents/Formations/DataScientest/Projet/Obsolete/load_data.py
+db.market_data.findOne()
+market_data.findOne()
+show collections
+use ProjetOPA
+show dbs

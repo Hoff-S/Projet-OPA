@@ -1,0 +1,20 @@
+artifact_path: sarima_crypto
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.2
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.5.0
+mlflow_version: 2.13.1
+model_size_bytes: 35546708
+model_uuid: 00ecad132b93410cac600e0175f76bd1
+run_id: 4cbceaffe3a54266974a3c14716a79df
+utc_time_created: '2024-06-06 10:15:29.321654'
