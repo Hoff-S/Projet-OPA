@@ -39,7 +39,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MARIADB_PW}
       MYSQL_DATABASE: ProjetOPA
-      MYSQL_USER: user
+      MYSQL_USER: root
       MYSQL_PASSWORD: ${MARIADB_PW}
     ports:
       - "3306:3306"    
@@ -87,7 +87,20 @@ services:
     ports:
      - 8000:8000
     networks: 
-      - compose-network 
+      - compose-network  
+
+  model_training:
+    image: model_training:latest
+    container_name: model_training
+    depends_on:
+      - cryptobot_api
+    environment:
+      - API_URL=cryptobot_api
+      - MLFLOW_TRACKING_URI=http://86.77.27.174:8080
+      - MLFLOW_TRACKING_USERNAME=admin
+      - MLFLOW_TRACKING_PASSWORD=${MLFLOW_PW}
+    networks: 
+      - compose-network
 
 networks:
   compose-network:
