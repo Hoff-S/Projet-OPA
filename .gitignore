@@ -1,4 +1,4 @@
-setup.txt
+.setup.txt
 test_auth.py
 venv
 load_delta_klines_mariadb.py

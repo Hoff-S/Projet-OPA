@@ -14,16 +14,17 @@ def invboxcox(y, lmbda):
         return np.exp(np.log(lmbda * y + 1) / lmbda)
 
 # Définir l'URL du serveur MLflow
-mlflow.set_tracking_uri('http://localhost:5000')
+mlflow.set_tracking_uri('http://86.77.27.174:8080/')
 
-# Remplacez <run_id> par l'ID de run de votre modèle
+'''
+# ID run du modèle 
 run_id = "6df6abc77def4d67a07bc8b3f6e7837a"
 local_model_path = f"C:/Users/apsho/OneDrive/Documents/Formations/DataScientest/Projet/mlruns/594249274040179504/{run_id}/artifacts/sarima_crypto/model.pkl"
 
 # Charger les paramètres du modèle
 client = mlflow.tracking.MlflowClient()
 run = client.get_run(run_id)
-lmbda = float(run.data.params['lambda'])  # Assurez-vous que lambda est correctement récupéré
+lmbda = float(run.data.params['lambda'])
 
 # Charger le modèle SARIMA depuis le fichier local
 with open(local_model_path, "rb") as f:
@@ -58,4 +59,4 @@ plt.xlabel('Date')
 plt.ylabel('Valeur prédites')
 plt.show()
 
-print(predictions)
+print(predictions)'''
