@@ -5,6 +5,12 @@ services:
     container_name: my_mongo
     image: mongo:5.0
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "mongo --eval 'db.runCommand(\"ping\").ok' localhost:27017/test --quiet"]
+      interval: 15s
+      timeout: 30s
+      retries: 3
+      start_period: 20s
     environment:
       - MONGO_INITDB_ROOT_USERNAME=admin
       - MONGO_INITDB_DATABASE=cryptobot
@@ -13,13 +19,16 @@ services:
       - compose-network
     ports:
       - '27017:27017'
+    volumes:
+      - data_mongodb:/data/db
 
   mongoexpress:
     container_name: mongo-express
     image: mongo-express:0.54
     restart: always
     depends_on:
-      - database
+      database:
+        condition: service_healthy
     networks: 
       - compose-network
     environment:
@@ -36,6 +45,12 @@ services:
     image: mariadb:latest
     container_name: my_mariadb
     restart: always
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 45s
     environment:
       MYSQL_ROOT_PASSWORD: ${MARIADB_PW}
       MYSQL_DATABASE: ProjetOPA
@@ -44,7 +59,9 @@ services:
     ports:
       - "3306:3306"    
     networks: 
-      - compose-network 
+      - compose-network
+    volumes:
+      - data_mariadb:/var/lib/mysql
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -55,7 +72,8 @@ services:
     ports:
      - 8080:80
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     networks: 
       - compose-network 
 
@@ -63,8 +81,10 @@ services:
     image: cryptobot_loader:latest
     container_name: cryptobot_loader
     depends_on:
-      - database
-      - mariadb
+      database:
+        condition: service_healthy 
+      mariadb:
+        condition: service_healthy
     environment:
       - MARIADB_PW=${MARIADB_PW}
       - MARIADB_HOST=mariadb
@@ -77,8 +97,7 @@ services:
     image: cryptobot_api:latest
     container_name: cryptobot_api
     depends_on:
-      - database
-      - data_loader
+      -  data_loader
     environment:
       - MARIADB_PW=${MARIADB_PW}
       - MARIADB_HOST=mariadb
@@ -93,7 +112,7 @@ services:
     image: model_training:latest
     container_name: model_training
     depends_on:
-      - cryptobot_api
+      -  cryptobot_api
     environment:
       - API_URL=cryptobot_api
       - MLFLOW_TRACKING_URI=http://86.77.27.174:8080
@@ -105,3 +124,7 @@ services:
 networks:
   compose-network:
     name: my_network
+
+volumes:
+  data_mariadb:
+  data_mongodb:
