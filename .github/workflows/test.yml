@@ -12,6 +12,9 @@ jobs:
         with:
           fetch-depth: 0
       - name: Continuous Integration
+        env: 
+          MARIADB_PW: ${{ secrets.MARIADB_PW }}
+          MONGODB_PW: ${{ secrets.MONGODB_PW }}
         run: |
           cd docker_loader
           docker build . -t cryptobot_loader:latest
@@ -20,7 +23,7 @@ jobs:
           cd ../docker_test_api
           docker build . -t cryptobot_api_test:latest
           cd ../docker_compose
-          docker-compose up -d database mariadb -e "MARIADB_PW=${{ secrets.MARIADB_PW }}" -e "MONGODB_PW=${{ secrets.MARIADB_PW }}"
-          docker-compose up -d data_loader -e "MARIADB_PW=${{ secrets.MARIADB_PW }}" -e "MONGODB_PW=${{ secrets.MARIADB_PW }}"
-          docker-compose up -d cryptobot_api -e "MARIADB_PW=${{ secrets.MARIADB_PW }}" -e "MONGODB_PW=${{ secrets.MARIADB_PW }}"
+          docker-compose up -d database mariadb
+          docker-compose up -d data_loader
+          docker-compose up -d cryptobot_api
           docker-compose up -d cryptobot_api_test
