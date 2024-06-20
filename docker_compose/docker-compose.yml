@@ -96,8 +96,6 @@ services:
   cryptobot_api:
     image: cryptobot_api:latest
     container_name: cryptobot_api
-    depends_on:
-      -  data_loader
     environment:
       - MARIADB_PW=${MARIADB_PW}
       - MARIADB_HOST=mariadb
@@ -120,6 +118,16 @@ services:
       - MLFLOW_TRACKING_PASSWORD=${MLFLOW_PW}
     networks: 
       - compose-network
+
+  cryptobot_api_test:
+    image: cryptobot_api_test:latest
+    container_name: cryptobot_api_test
+    depends_on:
+      -  cryptobot_api
+    environment:
+      - API_URL=cryptobot_api
+    networks: 
+      - compose-network 
 
 networks:
   compose-network:
