@@ -1,0 +1,26 @@
+name: Action
+on:
+  pull_request:
+    branches: 
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Continuous Integration
+        run: |
+          cd docker_loader
+          docker build . -t cryptobot_loader:latest
+          cd ../docker_api
+          docker build . -t cryptobot_api:latest
+          cd ../docker_api_test
+          docker build . -t cryptobot_api_test:latest
+          cd ../docker_compose
+          docker-compose up -d database mariadb -e "MARIADB_PW=${{ secrets.MARIADB_PW }}" -e "MONGODB_PW=${{ secrets.MARIADB_PW }}"
+          docker-compose up -d data_loader -e "MARIADB_PW=${{ secrets.MARIADB_PW }}" -e "MONGODB_PW=${{ secrets.MARIADB_PW }}"
+          docker-compose up -d cryptobot_api -e "MARIADB_PW=${{ secrets.MARIADB_PW }}" -e "MONGODB_PW=${{ secrets.MARIADB_PW }}"
+          docker-compose up -d cryptobot_api_test
