@@ -53,4 +53,3 @@ jobs:
             docker-compose up -d database mariadb
             docker-compose up -d data_loader
             docker-compose up -d cryptobot_api
-
