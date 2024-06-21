@@ -17,11 +17,11 @@ jobs:
           MONGODB_PW: ${{ secrets.MONGODB_PW }}
         run: |
           cd docker_loader
-          docker build . -t cryptobot_loader:latest
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
           cd ../docker_api
-          docker build . -t cryptobot_api:latest
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest
           cd ../docker_test_api
-          docker build . -t cryptobot_api_test:latest
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_api_test:latest
           cd ../docker_compose
           docker-compose up -d database mariadb
           docker-compose up -d data_loader

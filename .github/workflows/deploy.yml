@@ -12,9 +12,6 @@ jobs:
         with:
           fetch-depth: 0
       - name: Continuous Integration
-        env: 
-          MARIADB_PW: ${{ secrets.MARIADB_PW }}
-          MONGODB_PW: ${{ secrets.MONGODB_PW }}
         run: |
           cd docker_loader
           docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
@@ -34,7 +31,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           source: docker_compose/docker-compose.yml
-          target: /home/${{ secrets.USERNAME }}/projetopa
+          target: /home/${{ secrets.USERNAME }}/${{ secrets.DOCKER_USERNAME }}
       - name: Continuous Deployment 2
         uses: appleboy/ssh-action@v1.0.3
         env: 
@@ -45,11 +42,14 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
+          envs: MARIADB_PW,MONGODB_PW
           script: |
             cd projetopa/docker_compose
             docker-compose down
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest            
             docker-compose up -d database mariadb
+            sleep 10
             docker-compose up -d data_loader
+            sleep 5
             docker-compose up -d cryptobot_api
