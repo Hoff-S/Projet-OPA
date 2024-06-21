@@ -78,7 +78,7 @@ services:
       - compose-network 
 
   data_loader:
-    image: cryptobot_loader:latest
+    image: projetopa/cryptobot_loader:latest
     container_name: cryptobot_loader
     depends_on:
       database:
@@ -94,7 +94,7 @@ services:
       - compose-network 
 
   cryptobot_api:
-    image: cryptobot_api:latest
+    image: projetopa/cryptobot_api:latest
     container_name: cryptobot_api
     environment:
       - MARIADB_PW=${MARIADB_PW}
@@ -107,7 +107,7 @@ services:
       - compose-network  
 
   model_training:
-    image: model_training:latest
+    image: projetopa/model_training:latest
     container_name: model_training
     depends_on:
       -  cryptobot_api
@@ -120,7 +120,7 @@ services:
       - compose-network
 
   cryptobot_api_test:
-    image: cryptobot_api_test:latest
+    image: projetopa/cryptobot_api_test:latest
     container_name: cryptobot_api_test
     depends_on:
       -  cryptobot_api
