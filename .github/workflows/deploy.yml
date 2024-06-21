@@ -46,7 +46,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd projetopa
+            cd projetopa/docker_compose
             docker-compose down
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest            
