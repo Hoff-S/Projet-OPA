@@ -96,6 +96,7 @@ services:
   cryptobot_api:
     image: projetopa/cryptobot_api:latest
     container_name: cryptobot_api
+    restart: always
     environment:
       - MARIADB_PW=${MARIADB_PW}
       - MARIADB_HOST=mariadb

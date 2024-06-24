@@ -235,6 +235,7 @@ async def get_prediction():
     '''
     Returns tomorrow close_price prediction
     '''
+    log_message(datetime.now(),"DEBUG","/prediction")
     results = fetch_prediction()
-
+    
     return results
