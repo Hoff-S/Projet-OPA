@@ -30,6 +30,10 @@ def test_get_statistics(api_url):
     response = re.get(f"{api_url}/statistics")
     assert response.status_code == 200
 
+def test_get_prediction(api_url):
+    response = re.get(f"{api_url}/prediction")
+    assert response.status_code == 200
+
 # Define url for api.
 api_url = "http://{}:8000".format(os.environ.get('API_URL'))
 # list of tests.
@@ -38,3 +42,4 @@ test_get_last(api_url)
 test_get_all(api_url)
 test_post_insert(api_url)
 test_get_statistics(api_url)
+test_get_prediction(api_url)

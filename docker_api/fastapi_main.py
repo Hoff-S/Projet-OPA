@@ -5,6 +5,14 @@ from sqlalchemy import create_engine, Column, MetaData, String, DateTime, Table,
 import os
 from pydantic import BaseModel
 from datetime import datetime
+import requests
+import numpy as np
+import mlflow
+from datetime import timedelta
+
+# MLFLOW TRACKING URI
+mlflow_tracking_uri = os.environ.get('MLFLOW_TRACKING_URI')
+mlflow.set_tracking_uri(mlflow_tracking_uri)
 
 # API
 api = FastAPI(
@@ -84,6 +92,81 @@ def fastapi_statistics():
 
     return dict_rows
 
+def invboxcox(y, lmbda):
+    """Fonction inverse de la transformée de Box-Cox"""
+    if lmbda == 0:
+        return np.exp(y)
+    else:
+        return np.exp(np.log(lmbda * y + 1) / lmbda)
+    
+def get_experiment_id(experiment_name):
+    experiment = mlflow.get_experiment_by_name(experiment_name)
+    if experiment is not None:
+        experiment_id = experiment.experiment_id
+        print(f"Experiment ID: {experiment_id}")
+        return experiment_id
+    else:
+        print(f"L'expérience '{experiment_name}' n'existe pas.")
+        return None
+
+def get_active_run_id(experiment_id):
+
+    """Return the active run id from MLFLOW server, for a given experiment ID"""
+
+    # Search active run
+    r = requests.post(f'{mlflow_tracking_uri}/api/2.0/mlflow/runs/search',
+                  json={'experiment_ids': [experiment_id], 'max_results':1}
+                  )
+
+    # Active run info from the MLFLOW Server
+    data = r.json()
+
+    # Get active run_id
+    run_id = data['runs'][0]['info']['run_id']
+    print(f"Run ID: {run_id}")
+
+    return run_id
+
+def fetch_prediction():
+
+    # Experiment ID
+    experiment_id = get_experiment_id("Crypto_Models")
+    if experiment_id is None:
+        return None
+
+    # Run ID
+    run_id = get_active_run_id(experiment_id=experiment_id)
+
+    # Charger les paramètres du modèle
+    run = mlflow.get_run(run_id)
+    lmbda = float(run.data.params['lambda'])
+    
+    model_uri = f'runs:/{run_id}/model'
+    loaded_model = mlflow.statsmodels.load_model(model_uri)
+
+    # Obtenir la date actuelle
+    current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Faire des prédictions pour demain avec le modèle chargé
+    steps = 1
+    forecast = loaded_model.get_forecast(steps=steps)
+    forecast_dates = [current_date + timedelta(days=i) for i in range(steps)]
+    predictions = forecast.summary_frame()
+    predictions.index = forecast_dates
+
+    # Appliquer l'inverse de la transformation Box-Cox
+    predictions['mean'] = invboxcox(predictions['mean'], lmbda)
+    predictions['mean_ci_lower'] = invboxcox(predictions['mean_ci_lower'], lmbda)
+    predictions['mean_ci_upper'] = invboxcox(predictions['mean_ci_upper'], lmbda)
+
+    result = {
+        "Prediction": predictions['mean'].iloc[0],
+        "Borne inférieure de l'intervalle de confiance": predictions['mean_ci_lower'].iloc[0],
+        "Borne supérieure de l'intervalle de confiance": predictions['mean_ci_upper'].iloc[0]
+    }
+
+    return result
+
 # API status
 @api.get('/status')
 async def get_status():
@@ -144,5 +227,14 @@ async def get_statistics():
     '''
     log_message(datetime.now(),"DEBUG","/statistics")
     results = fastapi_statistics()
+
+    return results
+
+@api.get('/prediction')
+async def get_prediction():
+    '''
+    Returns tomorrow close_price prediction
+    '''
+    results = fetch_prediction()
 
     return results

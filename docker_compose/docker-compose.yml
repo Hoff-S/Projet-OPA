@@ -101,6 +101,7 @@ services:
       - MARIADB_HOST=mariadb
       - MONGODB_PW=${MONGODB_PW}
       - MONGODB_HOST=database 
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
     ports:
      - 8000:8000
     networks: 
@@ -113,7 +114,7 @@ services:
       -  cryptobot_api
     environment:
       - API_URL=cryptobot_api
-      - MLFLOW_TRACKING_URI=http://86.77.27.174:8080
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}
       - MLFLOW_TRACKING_USERNAME=admin
       - MLFLOW_TRACKING_PASSWORD=${MLFLOW_PW}
     networks: 

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import os
 from sqlalchemy import create_engine, text
 from scipy import stats
@@ -8,6 +9,10 @@ from itertools import product
 import mlflow
 from mlflow.tracking import MlflowClient
 import requests
+import mlflow.pyfunc
+from mlflow.pyfunc import PythonModel
+import time
+
 
 # -----------------------------------------------------------------------------------------------
 #Input
@@ -29,7 +34,7 @@ df_day = pd.DataFrame(data)
 
 # Set DataFrame index
 df_day = df_day.set_index('open_time')
-
+print(df_day)
 # -----------------------------------------------------------------------------------------------
 
 # BoxCox Transformation
@@ -84,26 +89,43 @@ print(result_table.sort_values(by = 'aic', ascending=True).head())
 print(best_model.summary())
 
 # -----------------------------------------------------------------------------------------------
-### EXPORT TO MLFLOW
+### WRAP AND EXPORT TO MLFLOW
 
-print(best_model)
-
-client = MlflowClient(tracking_uri=mlflow_tracking_uri)
-
-crypto_experiment = mlflow.set_experiment("Crypto_Models")
+# Initialiser l'URI de suivi MLflow
+mlflow.set_tracking_uri(mlflow_tracking_uri)
+mlflow.set_experiment("Crypto_Models")
 run_name = "first_run"
-artifact_path = "sarima_crypto"
 
+print(f"Current working directory: {os.getcwd()}")
+
+# Modifiez le bloc d'enregistrement du modèle comme suit :
 with mlflow.start_run(run_name=run_name) as run:
+    artifact_path = "model"
 
-    # Trained model
-    mlflow.sklearn.log_model(sk_model=best_model, artifact_path=artifact_path)
+    # Log the trained model
+    mlflow.statsmodels.log_model(best_model, artifact_path=artifact_path)
+    print(f"Logging model to {artifact_path}")
 
-    # Save datas
-    mlflow.log_table(data=df_day, artifact_file="data.json")
+    # Verify that the model was logged
+    local_model_path = mlflow.get_artifact_uri(artifact_path)
+    print(f'Model logged at: {local_model_path}')
 
-    # Save params
-    mlflow.log_params({"lambda": lmbda, "order_p": best_param[0], "order_d": d, "order_q": best_param[1], "seasonal_order_P": best_param[2], "seasonal_order_D": D, "seasonal_order_Q": best_param[3]})
+    # Check if the artifact path is valid and exists
+    if os.path.exists(artifact_path):
+        print(f"Artifact path {artifact_path} exists.")
+    else:
+        print(f"Artifact path {artifact_path} does not exist.")
+
+    # Save parameters
+    mlflow.log_params({
+        "lambda": lmbda,
+        "order_p": best_param[0],
+        "order_d": d,
+        "order_q": best_param[1],
+        "seasonal_order_P": best_param[2],
+        "seasonal_order_D": D,
+        "seasonal_order_Q": best_param[3]
+    })
 
     # Save metrics
-    mlflow.log_metrics({"yesterday_close_price_value": df_day['close_price'].iloc[-1]})
+    mlflow.log_metric("yesterday_close_price_value", df_day['close_price'].iloc[-1])
