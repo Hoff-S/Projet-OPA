@@ -26,7 +26,7 @@ jobs:
       - name: Continuous Deployment 1
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: 34.240.175.91
+          host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
@@ -38,7 +38,7 @@ jobs:
           MARIADB_PW: ${{ secrets.MARIADB_PW }}
           MONGODB_PW: ${{ secrets.MONGODB_PW }}
         with:
-          host: 34.240.175.91
+          host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
