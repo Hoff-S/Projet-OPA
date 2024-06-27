@@ -50,8 +50,11 @@ jobs:
             cd projetopa/docker_compose
             docker-compose down
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
-            docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest            
-            docker pull ${{ secrets.DOCKER_USERNAME }}/model_training:latest            
+            docker rmi $(docker images --filter "dangling=true" -q)
+            docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest
+            docker rmi $(docker images --filter "dangling=true" -q)            
+            docker pull ${{ secrets.DOCKER_USERNAME }}/model_training:latest
+            docker rmi $(docker images --filter "dangling=true" -q)            
             docker-compose up -d database mariadb
             sleep 10
             docker-compose up -d data_loader
