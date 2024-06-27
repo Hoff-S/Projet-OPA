@@ -33,7 +33,7 @@ def test_get_statistics(api_url):
 def test_get_prediction(api_url):
     response = re.get(f"{api_url}/prediction")
     assert response.status_code == 200
-    assert len(response.json()) == 3
+    assert len(response.json()) >= 20
 
 # Define url for api.
 api_url = "http://{}:8000".format(os.environ.get('API_URL'))
