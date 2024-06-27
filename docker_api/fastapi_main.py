@@ -11,7 +11,13 @@ import mlflow
 from datetime import timedelta
 
 # MLFLOW TRACKING URI
-mlflow_tracking_uri = os.environ.get('MLFLOW_TRACKING_URI')
+if not os.environ.get('MLFLOW_TRACKING_URI'):
+    ip = requests.get('https://api.ipify.org').content.decode('utf8')
+    uri= 'http://{}'.format(ip) + ':8085'
+    mlflow_tracking_uri = uri
+else:
+    mlflow_tracking_uri = os.environ.get('MLFLOW_TRACKING_URI')
+
 mlflow.set_tracking_uri(mlflow_tracking_uri)
 
 # API

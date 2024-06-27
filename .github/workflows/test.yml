@@ -15,6 +15,7 @@ jobs:
         env: 
           MARIADB_PW: ${{ secrets.MARIADB_PW }}
           MONGODB_PW: ${{ secrets.MONGODB_PW }}
+          MLFLOW_TRACKING_URI: http://${{ secrets.HOST }}:8085
         run: |
           cd docker_loader
           docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
