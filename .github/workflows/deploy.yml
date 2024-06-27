@@ -19,10 +19,13 @@ jobs:
           docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest
           cd ../docker_test_api
           docker build . -t ${{ secrets.DOCKER_USERNAME }}/cryptobot_api_test:latest
+          cd ../docker_training
+          docker build . -t ${{ secrets.DOCKER_USERNAME }}/model_training:latest
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           docker push ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/cryptobot_api_test:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/model_training:latest
       - name: Continuous Deployment 1
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -48,8 +51,11 @@ jobs:
             docker-compose down
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_loader:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/cryptobot_api:latest            
+            docker pull ${{ secrets.DOCKER_USERNAME }}/model_training:latest            
             docker-compose up -d database mariadb
             sleep 10
             docker-compose up -d data_loader
             sleep 5
             docker-compose up -d cryptobot_api
+            sleep 5
+            docker-compose up -d model_training
