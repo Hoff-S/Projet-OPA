@@ -1,14 +1,13 @@
 from fastapi import FastAPI
 import pandas as pd
 from pymongo import MongoClient
-from sqlalchemy import create_engine, Column, MetaData, String, DateTime, Table, insert, select, func
+from sqlalchemy import create_engine, Column, MetaData, String, DateTime, Table, insert, select, func, Float, delete
 import os
 from pydantic import BaseModel
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import numpy as np
 import mlflow
-from datetime import timedelta
 
 # MLFLOW TRACKING URI
 if not os.environ.get('MLFLOW_TRACKING_URI'):
@@ -64,6 +63,7 @@ engine = create_engine(connection_url)
 connection = engine.connect()
 
 metadata = MetaData()
+
 fastapi_logs = Table(
         'fastapi_logs',
         metadata,
@@ -74,6 +74,35 @@ fastapi_logs = Table(
 
 if not engine.dialect.has_table(connection, table_name='fastapi_logs'):
     fastapi_logs.create(engine)
+
+data_forecast = Table(
+        'data_forecast',
+        metadata,
+        Column('date', DateTime),
+        Column('mean', Float),
+        Column('mean_ci_lower', Float),
+        Column('mean_ci_upper', Float)
+        )
+
+if not engine.dialect.has_table(connection, table_name='data_forecast'):
+    data_forecast.create(engine)
+
+def empty_forecast_table():
+    with engine.connect() as connection:
+        connection.execute(delete(data_forecast))
+        connection.commit()
+
+def insert_forecast_to_db(predictions):
+    with engine.connect() as connection:
+        for date, row in predictions.iterrows():
+            stmt = insert(data_forecast).values(
+                date=date,
+                mean=row['mean'],
+                mean_ci_lower=row['mean_ci_lower'],
+                mean_ci_upper=row['mean_ci_upper']
+            )
+            connection.execute(stmt)
+        connection.commit()
 
 def log_message(log_time, log_level, log_message):
     stmt = insert(fastapi_logs).values(log_time=log_time, log_level=log_level, log_message=log_message)
@@ -133,6 +162,16 @@ def get_active_run_id(experiment_id):
 
     return run_id
 
+def get_model_creation_day(run_id):
+    run = mlflow.get_run(run_id)
+    if run.info.start_time is not None:
+        model_dt_creation_time = datetime.fromtimestamp(run.info.start_time / 1000)
+        model_dt_creation_day = model_dt_creation_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    else:
+        print("Error: Could not retrieve creation time.")
+
+    return model_dt_creation_day
+
 def fetch_prediction():
 
     # Experiment ID
@@ -150,28 +189,22 @@ def fetch_prediction():
     model_uri = f'runs:/{run_id}/model'
     loaded_model = mlflow.statsmodels.load_model(model_uri)
 
-    # Obtenir la date actuelle
-    current_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    # Obtenir la date du dernier modèle entrainé
+    creation_day = get_model_creation_day(run_id)
 
     # Faire des prédictions pour demain avec le modèle chargé
-    steps = 1
+    steps = 7
     forecast = loaded_model.get_forecast(steps=steps)
-    forecast_dates = [current_date + timedelta(days=i) for i in range(steps)]
+    forecast_dates = [creation_day + timedelta(days=i) for i in range(steps)]
     predictions = forecast.summary_frame()
     predictions.index = forecast_dates
 
     # Appliquer l'inverse de la transformation Box-Cox
-    predictions['mean'] = invboxcox(predictions['mean'], lmbda)
-    predictions['mean_ci_lower'] = invboxcox(predictions['mean_ci_lower'], lmbda)
-    predictions['mean_ci_upper'] = invboxcox(predictions['mean_ci_upper'], lmbda)
+    predictions['mean'] = round(invboxcox(predictions['mean'], lmbda), 2)
+    predictions['mean_ci_lower'] = round(invboxcox(predictions['mean_ci_lower'], lmbda), 2)
+    predictions['mean_ci_upper'] = round(invboxcox(predictions['mean_ci_upper'], lmbda), 2)
 
-    result = {
-        "Prediction": predictions['mean'].iloc[0],
-        "Borne inférieure de l'intervalle de confiance": predictions['mean_ci_lower'].iloc[0],
-        "Borne supérieure de l'intervalle de confiance": predictions['mean_ci_upper'].iloc[0]
-    }
-
-    return result
+    return predictions
 
 # API status
 @api.get('/status')
@@ -241,7 +274,19 @@ async def get_prediction():
     '''
     Returns tomorrow close_price prediction
     '''
-    log_message(datetime.now(),"DEBUG","/prediction")
-    results = fetch_prediction()
-    
-    return results
+    log_message(datetime.now(), "DEBUG", "/prediction")
+
+    predictions = fetch_prediction()
+
+    if predictions is None:
+        return {'message': 'No predictions available'}
+
+    else:
+        empty_forecast_table()
+
+        insert_forecast_to_db(predictions)
+
+        # Convert the DataFrame to a dictionary for the API response
+        predictions_dict = predictions.to_dict()
+
+        return {'Prédiction sur les prix de fermeture': predictions_dict['mean']}
